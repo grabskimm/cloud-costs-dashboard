@@ -1,0 +1,23 @@
+{
+  "type": "Usage",
+  "timeframe": "Custom",
+    "timePeriod": {
+      "from": "2024-01-01T00:00:00Z",
+      "to": ""
+    },
+  "dataset": {
+    "granularity": "None",
+    "aggregation": {
+      "totalCost": {
+        "name": "PreTaxCost",
+        "function": "Sum"
+      }
+    },
+    "grouping": [
+      {
+        "type": "Dimension",
+        "name": "ResourceType"
+      }
+    ]
+  }
+}

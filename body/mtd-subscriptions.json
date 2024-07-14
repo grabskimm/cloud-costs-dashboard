@@ -1,0 +1,19 @@
+{
+    "type": "Usage",
+    "timeframe": "MonthToDate",
+    "dataset": {
+      "granularity": "None",
+      "aggregation": {
+        "totalCost": {
+          "name": "PreTaxCost",
+          "function": "Sum"
+        }
+      },
+      "grouping": [
+        {
+          "type": "Dimension",
+          "name": "SubscriptionName"
+        }
+      ]
+    }
+  }

@@ -1,0 +1,19 @@
+{
+  "type": "Usage",
+  "timeframe": "Custom",
+  "timePeriod": {
+    "from": "",
+    "to": ""
+  },
+  "dataset": {
+    "granularity": "None",
+    "aggregation": {
+      "totalCost": {
+        "name": "PreTaxCost",
+        "function": "Sum"
+      }
+    }
+  },
+  "includeActualCost": true,
+  "includeFreshPartialCost": true
+}
