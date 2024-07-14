@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ filename.replace('-', ' ').replace('owner', 'Resource Owner').replace('env', 'Environment').replace('ytd', 'Year to date').replace('mtd', 'Month to Date').title() }}:</title>
+    <style>
+        /* Adjust font and alignment */
+        body {
+            font-family: Inter; /* Change font */
+            font-weight: normal;
+            margin: 0;
+            padding: 0;
+            background-color: #100217;
+            overflow-x: hidden; /* Disable horizontal scrolling */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #e6e6e6;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: Inter; /* Change font */
+            text-align: center; /* Center align */
+            margin-bottom: 20px;
+        }
+        table {
+            font-family: Inter; /* Change font */
+            width: auto; /* Adjust width automatically */
+            max-width: 90%; /* Set maximum width */
+            border-collapse: collapse;
+            margin: 0 auto; /* Center align the table */
+        }
+        th, td {
+            text-align: center; /* Center align */
+            padding: 8px;
+        }
+        .last-update {
+            text-align: left; /* Align text to the left */
+            margin-top: 20px; /* Add some margin at the top */
+            font-style: italic;
+        }
+        /* Return button styles */
+        .return-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .return-button button {
+            padding: 10px 20px;
+            background-color: #f0e014;
+            color: #100217;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: Inter; /* Change font */
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .return-button button:hover {
+            background-color: #e6e6e6;
+        }
+
+        .scroll-button {
+            position: fixed;
+            padding: 10px 20px;
+            background-color: #f0e014;
+            color: #100217;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: Inter;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            z-index: 9999;
+        }
+        .scroll-button:hover {
+            background-color: #e6e6e6;
+        }
+        .scroll-top-button {
+            bottom: 20px;
+            left: 20px; /* Change from right to left */
+        }
+        .scroll-bottom-button {
+            bottom: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader"></div>
+    <div class="return-button">
+        <button onclick="goBack()">Return to Main Screen</button>
+    </div>
+    <div class="container">
+        <h1>{{ filename.replace('-', ' ').replace('ytd', 'Year to date').replace('owner', 'Resource Owner').replace('env', 'Environment').replace('mtd', 'Month to Date').title() }} Costs:</h1>
+        {{ html_table | safe }}
+        <div class="last-update">Last updated: {{ last_update }} PST</div>
+    </div>
+    
+    <!-- Scroll buttons -->
+    <button id="scrollBottomBtn" class="scroll-button scroll-bottom-button" onclick="scrollToBottom()" style="display: none;">Scroll to Bottom ↓</button>
+    <button id="scrollTopBtn" class="scroll-button scroll-top-button" onclick="scrollToTop()" style="display: none;">↑ Scroll to Top</button>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    
+        // Function to check if the page content exceeds a certain height
+        function checkPageHeight() {
+            var contentHeight = document.documentElement.scrollHeight;
+            var windowHeight = window.innerHeight;
+            var scrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+    
+            if (contentHeight > windowHeight && scrollPosition < contentHeight - windowHeight) {
+                // Show both scroll buttons
+                document.getElementById('scrollTopBtn').style.display = 'block';
+                document.getElementById('scrollBottomBtn').style.display = 'block';
+            } else if (contentHeight <= windowHeight) {
+                // Hide both scroll buttons if content height is less than or equal to window height
+                document.getElementById('scrollTopBtn').style.display = 'none';
+                document.getElementById('scrollBottomBtn').style.display = 'none';
+            } else {
+                // Show only scroll to top button if scrollbar is at the bottom
+                document.getElementById('scrollTopBtn').style.display = 'block';
+                document.getElementById('scrollBottomBtn').style.display = 'none';
+            }
+        }
+    
+        // Function to scroll to the top of the page
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    
+        // Function to scroll to the bottom of the page
+        function scrollToBottom() {
+            var contentHeight = document.documentElement.scrollHeight;
+            var windowHeight = window.innerHeight;
+            window.scrollTo({
+                top: contentHeight - windowHeight,
+                behavior: 'smooth'
+            });
+        }
+    
+        // Check page height on page load and resize
+        window.onload = checkPageHeight;
+        window.onresize = checkPageHeight;
+    </script>
+</body>
+</html>

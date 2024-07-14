@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Cloud Cost Management</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: "Inter";
+            background-color: #100217; /* Background color */
+            color: #e6e6e6; /* Text color */
+            padding-top: 10px;
+            margin: 0;
+        }
+        h1 {
+            font-family: "Inter";
+            font-weight: bold;
+            color: #f0e014; /* Header text color */
+            text-align: center; /* Center align text */
+        }
+        .header-container {
+            font-family: "Inter";
+            margin-bottom: 30px; /* Increase space between header and boxes */
+            text-align: center; /* Center align content */
+        }
+        img {
+            width: 350px;
+            height: 100px;
+        }
+        .container {
+            font-family: "Inter";
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #292f3f;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center align content */
+            margin-bottom: 0px;
+        }
+        .columns-container {
+            font-family: "Inter";
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* Add space between boxes */
+            margin-bottom: 0px;
+        }       
+        .box {
+            font-family: "Inter";
+            width: calc(325px - -65px); /* Adjust box width */
+            padding: 10px; /* Increase padding */
+            border-radius: 15px;
+            background-color: #434b5c;
+            text-align: center; /* Center text */
+            margin-bottom: 30px; /* Add space between boxes */
+        }       
+        select {
+            font-family: "Inter";
+            width: calc(100% - 20px); /* Adjust select width */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e6e6e6;
+            margin-top: 20px; /* Increase space between header and select */
+            font-family: "Inter";
+        }
+        a {
+            color: #f0e014;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        @media screen and (max-width: 600px) {
+            .box {
+                width: calc(100% - 20px);
+            }
+        }
+        select {
+            font-family: "Inter";
+            font-weight: bold;
+            text-align-last: center; /* Center align the text within the select */
+        }
+        select option {
+            font-family: "Inter";
+            font-weight: normal;
+            text-align: center; /* Center align the options */
+        }
+        #notification-box {
+            font-family: "Inter";
+            background-color: #6f4d80; /* Notification box background color */
+            color: #e6e6e6; /* Notification box text color */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px; /* Add space below the box */
+            opacity: 1;
+            transition: opacity 1s ease-in-out; /* Add transition for smooth fading */
+        }
+        #consumption-box {
+            font-family: "Inter";
+            background-color: #434b5c; /* Notification box background color */
+            color: #e6e6e6; /* Notification box text color */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px; /* Add space below the box */
+            opacity: 1;
+            transition: opacity 1s ease-in-out; /* Add transition for smooth fading */
+        }
+        #notification-box.fade-out {
+            opacity: 0;
+        }
+        .notification-text {
+            font-family: 'Inter';
+            font-weight: normal;
+        }
+        .notification-text:first-child {
+            margin-bottom: 30px;
+        }
+        .last-update {
+            text-align: center; /* Align text to the left */
+            margin-top: 20px; /* Add some margin at the top */
+            font-family: 'Inter';
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <!-- <img src="" alt="Logo"> -->
+        <h1>Azure Cloud Cost Management:</h1>
+    </div>
+    <div class="container">
+        <div id="notification-box">
+            <span class="notification-text">You can view resource costs by:</span><br>
+            <span class="notification-text">Environment, Team, Owner, Category, Resource Groups, Subscriptions, and Grand Total.</span>
+        </div>
+        <div id="consumption-box">
+            <h2 id="balanceHeader" style="color: #f0e014;">Azure Consumption Commitment Balance:</h2>
+            <pre id="consumptionData"></pre>
+        </div>
+        <div class="columns-container">
+            <div class="box">
+                <h2 id="resHeader" style="color: #f0e014;">Reservations:</h2>
+                <pre id="reservationsData"></pre>
+            </div>
+                <div class="box">
+                    <h2 id="foreHeader" style="color: #f0e014;">This Month's Forecast:</h2>
+                    <pre id="forecastData"></pre>
+                </div>
+        </div>
+        <div class="columns-container">
+            <div>
+                <div class="box">
+                    <h2 id="yetHeader" style="color: #f0e014;">Yesterday's Costs:</h2>
+                    <pre id="YETData"></pre>
+                    <select id="filterDropdown" onchange="window.location.href=this.value;">
+                        <option style="background-color: #6f4d80; font-weight: bold; color: #e6e6e6;" value="" selected disabled>Filter by:</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/yesterday-env">Environment</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/yesterday-team">Team</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/yesterday-owner">Owner</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/yesterday-category">Category</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/yesterday-grand-total">Grand Total</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/yesterday-resource-groups">Resource Groups</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/yesterday-resource-type">Resource Type</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/yesterday-subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+                <div class="box">
+                    <h2 id="dailyHeader" style="color: #f0e014;">Daily Costs:</h2>
+                    <pre id="DailyData"></pre>
+                    <select id="filterDropdown" onchange="window.location.href=this.value;">
+                        <option style="background-color: #6f4d80; font-weight: bold; color: #e6e6e6;" value="" selected disabled>Filter by:</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/daily-env">Environment</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/daily-team">Team</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/daily-owner">Owner</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/daily-category">Category</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/daily-grand-total">Grand Total</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);"  value="/daily-resource-groups">Resource Groups</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/daily-resource-type">Resource Type</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/daily-subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="box">
+                    <h2 id="mtdHeader" style="color: #f0e014;">Month to Date Costs:</h2>
+                    <pre id="MTDData"></pre>
+                    <select id="filterDropdown" onchange="window.location.href=this.value;">
+                        <option style="background-color: #6f4d80; font-weight: bold; color: #e6e6e6;" value="" selected disabled>Filter by:</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/mtd-env">Environment</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/mtd-team">Team</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);"  value="/mtd-owner">Owner</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/mtd-category">Category</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/mtd-grand-total">Grand Total</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/mtd-resource-groups">Resource Groups</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/mtd-resource-type">Resource Type</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/mtd-subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+                <div class="box">
+                    <h2 id="lastHeader" style="color: #f0e014;">Last Month Costs:</h2>
+                    <pre id="LASTData"></pre>
+                    <select id="filterDropdown" onchange="window.location.href=this.value;">
+                        <option style="background-color: #6f4d80; font-weight: bold; color: #e6e6e6;" value="" selected disabled>Filter by:</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/last-month-env">Environment</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/last-month-team">Team</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/last-month-owner">Owner</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/last-month-category">Category</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/last-month-grand-total">Grand Total</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/last-month-resource-groups">Resource Groups</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/last-month-resource-type">Resource Type</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/last-month-subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="columns-container">
+            <div class="box" style="width: 100%; margin-bottom: 0px;">
+                <h2 id="ytdHeader" style="color: #f0e014;">Year to Date Costs:</h2>
+                <pre id="YTDData"></pre>
+                    <select id="filterDropdown" onchange="window.location.href=this.value;">
+                        <option style="background-color: #6f4d80; font-weight: bold; color: #e6e6e6;" value="" selected disabled>Filter by:</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/ytd-env">Environment</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/ytd-team">Team</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/ytd-owner">Owner</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/ytd-category">Category</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/ytd-grand-total">Grand Total</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/ytd-resource-groups">Resource Groups</option>
+                        <option style="background-color: rgba(242, 218, 250, 0.799);" value="/ytd-resource-type">Resource Type</option>
+                        <option style="background-color: rgba(195, 159, 201, 0.799);" value="/ytd-subscriptions">Subscriptions</option>
+                    </select>
+                </div>
+            </div>
+            <div class="last-update" style="margin-bottom: 0px;">**Data may not include reservations or marketplace transactions**</a></div>
+        </div>
+    </div>
+    <div class="last-update">This dashboard is still in early development. Feedback is welcomed. File issues <a href="https://github.com/grabskimm/cloud-costs-dashboard" target="_blank">here</a>.</div>
+    <script>
+        // JavaScript to hide the notification box after 30 seconds
+        setTimeout(function() {
+        var notificationBox = document.getElementById('notification-box');
+        notificationBox.classList.add('fade-out');
+        setTimeout(function() {
+            notificationBox.remove(); // Remove the notification box from the DOM
+        }, 500); // Wait for 1 second (same duration as the fade-out animation)
+    }, 30000); // 3000 milliseconds = 3 seconds
+</script>
+<script>
+    window.onload = function() {
+        // Reset the dropdown to the default option
+        const filterDropdown = document.getElementById('filterDropdown');
+        filterDropdown.selectedIndex = 0;
+    };
+</script>
+<script>
+    const reservationCost = {{reservation_cost}};
+    const formattedReservationCost = reservationCost.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    const resHeader = document.getElementById('resHeader');
+    resHeader.textContent = `Reservations: $${formattedReservationCost}`;
+</script>
+<script>
+    async function fetchConsumptionData() {
+        try {
+            const response = await fetch('/api/consumption');
+            if (!response.ok) {
+                throw new Error('Failed to fetch consumption data');
+            }
+            const data = await response.json();
+
+            // Process the data to calculate the total closed balance
+            const closedBalances = data.map(item => item.properties.closedBalance.value);
+            const totalClosedBalance = closedBalances.reduce((acc, balance) => acc + balance, 0);
+            const formattedBalance = totalClosedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Update the h2 element with the formatted total closed balance
+            const balanceHeader = document.getElementById('balanceHeader');
+            balanceHeader.textContent = `Azure Consumption Commitment Balance: $${formattedBalance}`;
+        } catch (error) {
+            console.error(error);
+            const balanceHeader = document.getElementById('balanceHeader');
+            balanceHeader.textContent = 'Azure Consumption Commitment Balance:';
+        }
+    }
+
+    fetchConsumptionData();
+</script>
+<script>
+    async function fetchYETData() {
+        try {
+            const response = await fetch('/api/yesterday-grand-total');
+            if (!response.ok) {
+                throw new Error('Failed to fetch yesterday-grand-total data');
+            }
+            const data = await response.json();
+    
+            // Extract the rows from the JSON response
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+    
+            // Process the rows to calculate the total closed balance
+            const totalClosedBalance = rows.reduce((acc, row) => acc + row[0], 0);
+            const formattedTotalClosedBalance = totalClosedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+            // Update the h2 element with the formatted total closed balance
+            const yetHeader = document.getElementById('yetHeader');
+            yetHeader.textContent = `Yesterday: $${formattedTotalClosedBalance}`;
+        } catch (error) {
+            console.error(error);
+            const yetHeader = document.getElementById('yetHeader');
+            yetHeader.textContent = 'Failed to load data';
+        }
+    }
+    
+    fetchYETData();
+</script>
+<script>
+    async function fetchMTDData() {
+        try {
+            const response = await fetch('/api/mtd-grand-total');
+            if (!response.ok) {
+                throw new Error('Failed to fetch mtd-grand-total data');
+            }
+            const data = await response.json();
+    
+            // Extract the rows from the JSON response
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+    
+            // Process the rows to calculate the total closed balance
+            const totalClosedBalance = rows.reduce((acc, row) => acc + row[0], 0);
+            const total = totalClosedBalance + reservationCost;
+            const formattedTotalClosedBalance = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+            // Update the h2 element with the formatted total closed balance
+            const mtdHeader = document.getElementById('mtdHeader');
+            mtdHeader.textContent = `Month to Date: $${formattedTotalClosedBalance}`;
+        } catch (error) {
+            console.error(error);
+            const mtdHeader = document.getElementById('mtdHeader');
+            mtdHeader.textContent = 'Month to Date:';
+        }
+    }
+    
+    fetchMTDData();
+</script>
+</script>
+<script>
+    async function fetchYTDData() {
+        try {
+            const response = await fetch('/api/ytd-grand-total');
+            if (!response.ok) {
+                throw new Error('Failed to fetch ytd-grand-total data');
+            }
+            const data = await response.json();
+    
+            // Extract the rows from the JSON response
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+    
+            // Process the rows to calculate the total closed balance
+            const totalClosedBalance = rows.reduce((acc, row) => acc + row[0], 0);
+            const formattedTotalClosedBalance = totalClosedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+            // Update the h2 element with the formatted total closed balance
+            const ytdHeader = document.getElementById('ytdHeader');
+            ytdHeader.textContent = `Year to Date: $${formattedTotalClosedBalance}`;
+        } catch (error) {
+            console.error(error);
+            const ytdHeader = document.getElementById('ytdHeader');
+            ytdHeader.textContent = 'Year to Date:';
+        }
+    }
+    
+    fetchYTDData();
+</script>
+<script>
+    async function fetchLASTData() {
+        try {
+            const response = await fetch('/api/last-month-grand-total');
+            if (!response.ok) {
+                throw new Error('Failed to fetch last-month-grand-total data');
+            }
+            const data = await response.json();
+    
+            // Extract the rows from the JSON response
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+    
+            // Process the rows to calculate the total closed balance
+            const totalClosedBalance = rows.reduce((acc, row) => acc + row[0], 0);
+            const total = totalClosedBalance + reservationCost;
+            const formattedTotalClosedBalance = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+            // Update the h2 element with the formatted total closed balance
+            const lastHeader = document.getElementById('lastHeader');
+            lastHeader.textContent = `Last Month: $${formattedTotalClosedBalance}`;
+        } catch (error) {
+            console.error(error);
+            const lastHeader = document.getElementById('lastHeader');
+            lastHeader.textContent = 'Last Month:';
+        }
+    }
+    
+    fetchLASTData();
+</script>
+<script>
+    async function fetchDailyData() {
+        try {
+            const response = await fetch('/api/daily-grand-total');
+            if (!response.ok) {
+                throw new Error('Failed to fetch daily-grand-total data');
+            }
+            const data = await response.json();
+
+            // Extract the rows from the JSON response
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+
+            // Calculate the total and average PreTaxCost
+            const totalPreTaxCost = rows.reduce((acc, row) => acc + row[0], 0);
+            const totalWithReservations = totalPreTaxCost + reservationCost;
+            const averagePreTaxCost = totalWithReservations / rows.length;
+            const formattedAveragePreTaxCost = averagePreTaxCost.toLocaleString('en-US', { 
+                style: 'currency', 
+                currency: 'USD',
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+
+            // Update the h2 element with the formatted average PreTaxCost
+            const dailyHeader = document.getElementById('dailyHeader');
+            dailyHeader.textContent = `Average Daily Costs: ${formattedAveragePreTaxCost}`;
+        } catch (error) {
+            console.error(error);
+            const dailyHeader = document.getElementById('dailyHeader');
+            dailyHeader.textContent = 'Daily Costs:';
+        }
+    }
+
+    fetchDailyData();
+</script>
+<script>
+    async function fetchForecastData() {
+        try {
+            const response = await fetch('/api/forecast');
+            if (!response.ok) {
+                throw new Error('Failed to fetch forecast data');
+            }
+            const data = await response.json();
+    
+            // Extract the rows from the JSON response under the 'properties' key
+            const rows = data.properties.rows;
+            if (!rows || !Array.isArray(rows)) {
+                throw new Error('Invalid data format: rows not found or not an array');
+            }
+    
+            // Calculate the total of actual and forecast costs where currency is 'USD'
+            const total = reservationCost + rows.reduce((acc, row) => {
+                if (row[2] === 'USD' && (row[1] === 'Actual' || row[1] === 'Forecast')) {
+                    return acc + row[0];
+                }
+                return acc;
+            }, 0);
+                       
+            const formattedTotal = total.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+    
+            // Update the h2 element with the formatted total
+            const foreHeader = document.getElementById('foreHeader');
+            if (foreHeader) {
+                foreHeader.textContent = `Forecast: $${formattedTotal}`;
+            } else {
+                console.error('Element with ID "foreHeader" not found.');
+            }
+        } catch (error) {
+            console.error('Caught an error:', error);
+            const foreHeader = document.getElementById('foreHeader');
+            if (foreHeader) {
+                foreHeader.textContent = 'Forecast:';
+            } else {
+                console.error('Element with ID "foreHeader" not found.');
+            }
+        }
+    }
+    fetchForecastData();
+</script>
+</body>
+</html>
